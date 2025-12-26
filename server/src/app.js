@@ -10,9 +10,25 @@ const app = express();
 /* ================================
    MIDDLEWARE
 ================================ */
+
+// ✅ ALLOW LOCAL + VERCEL FRONTEND
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ai-resume-analyzer-ten-sepia.vercel.app",
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -26,12 +42,12 @@ app.use("/uploads", express.static("uploads"));
 const authRoutes = require("./routes/auth");
 const resumeRoutes = require("./routes/resume");
 const jdRoutes = require("./routes/jd");
-const pdfRoutes = require("./routes/pdf"); // ✅ ADD THIS
+const pdfRoutes = require("./routes/pdf");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/jd", jdRoutes);
-app.use("/api/pdf", pdfRoutes); // ✅ ADD THIS
+app.use("/api/pdf", pdfRoutes);
 
 /* ================================
    DATABASE + SERVER
@@ -41,8 +57,9 @@ mongoose
   .then(() => {
     console.log("✅ Mongo connected");
 
-    app.listen(process.env.PORT || 5001, () =>
-      console.log(`🚀 Server running on port ${process.env.PORT || 5001}`)
+    const PORT = process.env.PORT || 5001;
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running on port ${PORT}`)
     );
   })
   .catch((err) => {
@@ -54,6 +71,6 @@ mongoose
    GLOBAL ERROR HANDLER
 ================================ */
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err);
-  res.status(500).json({ error: "Internal Server Error" });
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({ error: err.message || "Internal Server Error" });
 });
