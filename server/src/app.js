@@ -14,7 +14,7 @@ const app = express();
 // ✅ ALLOW LOCAL + VERCEL FRONTEND
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://ai-resume-analyzer-ten-sepia.vercel.app",
+  "https://ai-resume-analyzer-8r5c6eeik-jay3103-suthars-projects.vercel.app/",
 ];
 
 app.use(
